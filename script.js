@@ -340,6 +340,7 @@ function goToState(state, options = {}) {
   if (![STATE.MIDNIGHT, STATE.STORY, STATE.FINAL].includes(state)) {
     stopFireworks();
   }
+  UI.screen.classList.remove('proposal-style');
   resetPasswordEntry();
 
   switch (state) {
@@ -365,7 +366,8 @@ function goToState(state, options = {}) {
       setTheme('theme-proposal');
       UI.title.classList.remove('loading-ellipsis');
       UI.title.classList.remove('heart-beat');
-      setScreen('Would you be my Valentine? ❤️', '');
+      setScreen('So Miss Diksha Goyal, soon to be Mrs. Diksha Totuka','Would you be my Valentine? ❤️');
+      UI.screen.classList.add('proposal-style');
       setupActions();
       break;
     case STATE.COUNTDOWN:
