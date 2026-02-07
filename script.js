@@ -42,6 +42,11 @@ const UI = {
   finalVideo: document.getElementById('final-video'),
   fireworks: document.getElementById('fireworks'),
   devPanel: document.getElementById('dev-panel'),
+  loopControls: document.getElementById('loop-controls'),
+  loopToggle: document.getElementById('loop-toggle'),
+  loopNav: document.getElementById('loop-nav'),
+  loopPrev: document.getElementById('loop-prev'),
+  loopNext: document.getElementById('loop-next'),
 };
 
 const appState = {
@@ -58,6 +63,8 @@ const appState = {
   passwordBuffer: '',
   testEnabled: false,
   testBuffer: '',
+  loopMode: false,
+  loopIndex: 0,
 };
 
 const storySequence = [
@@ -66,13 +73,21 @@ const storySequence = [
   'A surprise awaits… Find the treasure 🗺️💎',
 ];
 
+const LOOP_STAGES = [
+  STATE.LOADING,
+  STATE.T1150,
+  STATE.T1155,
+  STATE.PROPOSAL,
+  STATE.COUNTDOWN,
+  STATE.MIDNIGHT,
+  STATE.STORY,
+  STATE.MAP,
+  STATE.CAMERA,
+  STATE.FINAL,
+];
+
 function isWithinAllowedDates() {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
-  const current = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return current.getTime() === today.getTime() || current.getTime() === tomorrow.getTime();
+  return true;
 }
 
 function setTheme(themeClass) {
@@ -226,6 +241,30 @@ function timelineTick() {
   }
 }
 
+function updateLoopNav() {
+  if (!UI.loopNav || !UI.loopPrev || !UI.loopNext) return;
+  UI.loopNav.classList.toggle('hidden', !appState.loopMode);
+  UI.loopPrev.disabled = appState.loopIndex <= 0;
+  UI.loopNext.disabled = appState.loopIndex >= LOOP_STAGES.length - 1;
+}
+
+function startLoopMode() {
+  appState.loopMode = true;
+  appState.timelineLocked = true;
+  appState.loopIndex = 0;
+  updateLoopNav();
+  goToState(LOOP_STAGES[appState.loopIndex]);
+}
+
+function stepLoop(direction) {
+  if (!appState.loopMode) return;
+  const nextIndex = appState.loopIndex + direction;
+  if (nextIndex < 0 || nextIndex >= LOOP_STAGES.length) return;
+  appState.loopIndex = nextIndex;
+  updateLoopNav();
+  goToState(LOOP_STAGES[appState.loopIndex]);
+}
+
 function setupActions() {
   UI.actions.innerHTML = '';
   if (appState.current === STATE.PROPOSAL) {
@@ -326,6 +365,14 @@ function goToState(state, options = {}) {
     stopCamera();
   }
   appState.current = state;
+
+  if (appState.loopMode) {
+    const stageIndex = LOOP_STAGES.indexOf(state);
+    if (stageIndex !== -1) {
+      appState.loopIndex = stageIndex;
+      updateLoopNav();
+    }
+  }
 
   clearActions();
   showScreen();
@@ -510,6 +557,7 @@ function capturePhoto() {
 function setupEventListeners() {
   document.addEventListener('click', (event) => {
     if (UI.devPanel && event.target.closest('.dev-panel')) return;
+    if (UI.loopControls && event.target.closest('.loop-controls')) return;
     if (appState.current === STATE.MIDNIGHT && appState.awaitingMidnightTap) {
       appState.awaitingMidnightTap = false;
       goToState(STATE.STORY);
@@ -586,6 +634,24 @@ function setupEventListeners() {
       if (document.fullscreenElement !== UI.finalVideo) {
         showVideoOverlay(false);
       }
+    });
+  }
+
+  if (UI.loopToggle) {
+    UI.loopToggle.addEventListener('click', () => {
+      startLoopMode();
+    });
+  }
+
+  if (UI.loopPrev) {
+    UI.loopPrev.addEventListener('click', () => {
+      stepLoop(-1);
+    });
+  }
+
+  if (UI.loopNext) {
+    UI.loopNext.addEventListener('click', () => {
+      stepLoop(1);
     });
   }
 
@@ -714,8 +780,8 @@ function stopFireworks() {
 }
 
 function initTimeline() {
-  goToState(getMappedTimeStage());
-  appState.timelineTimer = setInterval(timelineTick, 1000);
+  goToState(STATE.FINAL);
+  updateLoopNav();
 }
 
 function updateClock() {
