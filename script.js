@@ -49,6 +49,7 @@ const UI = {
   loopNext: document.getElementById('loop-next'),
   infoToggle: document.getElementById('info-toggle'),
   infoPanel: document.getElementById('info-panel'),
+  passwordInput: document.getElementById('password-input'),
 };
 
 const appState = {
@@ -140,6 +141,10 @@ function showCamera(show) {
 
 function showPassword(show) {
   UI.password.classList.toggle('hidden', !show);
+  if (show && UI.passwordInput && window.matchMedia('(max-width: 1024px)').matches) {
+    UI.passwordInput.value = '';
+    setTimeout(() => UI.passwordInput.focus(), 0);
+  }
 }
 
 function showVideoOverlay(show) {
@@ -174,6 +179,9 @@ function resetCameraUI() {
 function resetPasswordEntry() {
   appState.awaitingPassword = false;
   appState.passwordBuffer = '';
+  if (UI.passwordInput) {
+    UI.passwordInput.value = '';
+  }
   showPassword(false);
 }
 
@@ -560,6 +568,7 @@ function setupEventListeners() {
   document.addEventListener('click', (event) => {
     if (UI.devPanel && event.target.closest('.dev-panel')) return;
     if (UI.loopControls && event.target.closest('.loop-controls')) return;
+    if (UI.infoToggle && event.target.closest('.info-toggle, .info-panel')) return;
     if (appState.current === STATE.MIDNIGHT && appState.awaitingMidnightTap) {
       appState.awaitingMidnightTap = false;
       goToState(STATE.STORY);
@@ -627,6 +636,24 @@ function setupEventListeners() {
       appState.passwordBuffer = '';
     }
   });
+
+  if (UI.passwordInput) {
+    UI.passwordInput.addEventListener('input', () => {
+      if (!appState.awaitingPassword) return;
+      const value = UI.passwordInput.value.trim().toLowerCase();
+      if (value.length < 4) return;
+      if (value === 'love') {
+        flashScreen('rgba(64, 201, 120, 0.95)');
+        setTimeout(() => {
+          resetPasswordEntry();
+          goToState(STATE.FINAL);
+        }, 220);
+      } else {
+        flashScreen('rgba(255, 70, 70, 0.85)');
+        UI.passwordInput.value = '';
+      }
+    });
+  }
 
   if (UI.finalVideo && UI.videoOverlay) {
     UI.finalVideo.addEventListener('ended', () => {

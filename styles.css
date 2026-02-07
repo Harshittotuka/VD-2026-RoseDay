@@ -88,8 +88,8 @@ body.theme-rose {
 
 .info-toggle {
   position: absolute;
-  left: 16px;
-  bottom: 16px;
+  top: 16px;
+  right: 16px;
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -112,8 +112,8 @@ body.theme-rose {
 
 .info-panel {
   position: absolute;
-  left: 60px;
-  bottom: 16px;
+  top: 16px;
+  right: 60px;
   min-width: 220px;
   padding: 12px 14px;
   border-radius: 14px;
@@ -136,6 +136,29 @@ body.theme-rose {
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.4;
+}
+
+.password-input {
+  display: none;
+  margin-top: 14px;
+  width: min(280px, 80vw);
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+  font-size: 1rem;
+  text-align: center;
+}
+
+.password-input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+@media (max-width: 1024px) {
+  .password-input {
+    display: inline-block;
+  }
 }
 
 .loop-controls {
