@@ -47,6 +47,8 @@ const UI = {
   loopNav: document.getElementById('loop-nav'),
   loopPrev: document.getElementById('loop-prev'),
   loopNext: document.getElementById('loop-next'),
+  infoToggle: document.getElementById('info-toggle'),
+  infoPanel: document.getElementById('info-panel'),
 };
 
 const appState = {
@@ -652,6 +654,13 @@ function setupEventListeners() {
   if (UI.loopNext) {
     UI.loopNext.addEventListener('click', () => {
       stepLoop(1);
+    });
+  }
+
+  if (UI.infoToggle && UI.infoPanel) {
+    UI.infoToggle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      UI.infoPanel.classList.toggle('hidden');
     });
   }
 
